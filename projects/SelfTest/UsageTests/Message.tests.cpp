@@ -135,3 +135,11 @@ TEST_CASE( "Pointers can be converted to strings", "[messages][.][approvals]" ) 
     WARN( "actual address of p: " << &p );
     WARN( "toString(p): " << ::Catch::Detail::stringify( &p ) );
 }
+
+TEST_CASE( "CAPTURE can deal with complex expressions", "[messages]" ) {
+    int a = 1;
+    int b = 2;
+    int c = 3;
+    CAPTURE( a, b, c, a + b, a+b, c > b, a == 1);
+    SUCCEED();
+}

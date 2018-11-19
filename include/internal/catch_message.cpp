@@ -60,18 +60,30 @@ namespace Catch {
 
 
     Capturer::Capturer( StringRef macroName, SourceLineInfo const& lineInfo, ResultWas::OfType resultType, StringRef names ) {
-        auto start = std::string::npos;
-        for( size_t pos = 0; pos <= names.size(); ++pos ) {
-            char c = names[pos];
-            if( pos == names.size() || c == ' ' || c == '\t' || c == ',' || c == ']' ) {
-                if( start != std::string::npos ) {
-                    m_messages.push_back( MessageInfo( macroName, lineInfo, resultType ) );
-                    m_messages.back().message = names.substr( start, pos-start) + " := ";
-                    start = std::string::npos;
-                }
+        auto massage = [&] (size_t start, size_t end) {
+            while (names[start] == ',' || isspace(names[start])) {
+                ++start;
             }
-            else if( c != '[' && c != ']' && start == std::string::npos )
+            while (names[end] == ',' || isspace(names[end])) {
+                --end;
+            }
+            return names.substr(start, end - start + 1);
+        };
+
+        size_t start = 0;
+        for (size_t pos = 0; pos < names.size(); ++pos) {
+            char c = names[pos];
+            if (start != pos && c == ',') {
+                m_messages.emplace_back(macroName, lineInfo, resultType);
+                m_messages.back().message = massage(start, pos);
+                m_messages.back().message += " := ";
                 start = pos;
+            }
+        }
+        if (start != names.size()) {
+            m_messages.emplace_back(macroName, lineInfo, resultType);
+            m_messages.back().message = massage(start, names.size() - 1);
+            m_messages.back().message += " := ";
         }
     }
     Capturer::~Capturer() {
@@ -82,7 +94,7 @@ namespace Catch {
         }
     }
 
-    void Capturer::captureValue( size_t index, StringRef value ) {
+    void Capturer::captureValue( size_t index, std::string const& value ) {
         assert( index < m_messages.size() );
         m_messages[index].message += value;
         m_resultCapture.pushScopedMessage( m_messages[index] );
