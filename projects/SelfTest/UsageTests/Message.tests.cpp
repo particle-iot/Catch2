@@ -143,6 +143,9 @@ TEST_CASE( "CAPTURE can deal with complex expressions", "[messages][capture]" ) 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wunused-value" // In (1, 2), the "1" is unused ...
 #endif
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wunused-value" // All the comma operators are side-effect free
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(disable:4709) // comma in indexing operator
