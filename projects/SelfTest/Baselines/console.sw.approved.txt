@@ -2125,6 +2125,22 @@ with messages:
   a == 1 := true
 
 -------------------------------------------------------------------------------
+CAPTURE can deal with complex expressions involving commas
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: PASSED:
+with messages:
+  std::vector<int>{1, 2, 3}[0, 1, 2] := 3
+  std::vector<int>{1, 2, 3}[(0, 1)] := 2
+  std::vector<int>{1, 2, 3}[0] := 1
+  (helper_1436<int, int>{12, -12}) := { 12, -12 }
+  (helper_1436<int, int>(-12, 12)) := { -12, 12 }
+  (1, 2) := 2
+  (2, 3) := 3
+
+-------------------------------------------------------------------------------
 Capture and info messages
   Capture should stringify like assertions
 -------------------------------------------------------------------------------
@@ -10448,6 +10464,6 @@ Misc.tests.cpp:<line number>
 Misc.tests.cpp:<line number>: PASSED:
 
 ===============================================================================
-test cases:  227 |  158 passed |  65 failed |  4 failed as expected
-assertions: 1323 | 1177 passed | 125 failed | 21 failed as expected
+test cases:  228 |  159 passed |  65 failed |  4 failed as expected
+assertions: 1324 | 1178 passed | 125 failed | 21 failed as expected
 

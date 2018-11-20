@@ -11,6 +11,7 @@
 #include "catch_uncaught_exceptions.h"
 
 #include <cassert>
+#include <stack>
 
 namespace Catch {
 
@@ -71,20 +72,37 @@ namespace Catch {
         };
 
         size_t start = 0;
+        std::stack<char> openings;
         for (size_t pos = 0; pos < names.size(); ++pos) {
             char c = names[pos];
-            if (start != pos && c == ',') {
-                m_messages.emplace_back(macroName, lineInfo, resultType);
-                m_messages.back().message = massage(start, pos);
-                m_messages.back().message += " := ";
-                start = pos;
+            switch (c) {
+            case '[':
+            case '{':
+            case '(':
+            // It is basically impossible to disambiguate between
+            // comparison and start of template args in this context
+//            case '<':
+                openings.push(c);
+                break;
+            case ']':
+            case '}':
+            case ')':
+//           case '>':
+                openings.pop();
+                break;
+            case ',':
+                if (start != pos && openings.size() == 0) {
+                    m_messages.emplace_back(macroName, lineInfo, resultType);
+                    m_messages.back().message = massage(start, pos);
+                    m_messages.back().message += " := ";
+                    start = pos;
+                }
             }
         }
-        if (start != names.size()) {
-            m_messages.emplace_back(macroName, lineInfo, resultType);
-            m_messages.back().message = massage(start, names.size() - 1);
-            m_messages.back().message += " := ";
-        }
+        assert(openings.size() == 0 && "Mismatched openings");
+        m_messages.emplace_back(macroName, lineInfo, resultType);
+        m_messages.back().message = massage(start, names.size() - 1);
+        m_messages.back().message += " := ";
     }
     Capturer::~Capturer() {
         if ( !uncaught_exceptions() ){
